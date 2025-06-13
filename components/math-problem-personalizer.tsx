@@ -8,30 +8,26 @@ import { useState } from "react";
 // UI Components
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input"; // Assuming you have a reusable Input component
 
 // Icons (grouped for clarity)
 import {
   RefreshCw,
   Gamepad2,
   Smile,
-  ClubIcon as Football, // Renamed for clarity within the component
+  ClubIcon as Football,
   Cat,
+  Lightbulb, // New icon for hints
 } from "lucide-react";
 
 // Custom Components (grouped)
-import ThemeSelector from "@/components/theme-selector";
 // import ImageUploader from "@/components/image-uploader"; // Keep commented if not in use
 import ActionButtons from "@/components/action-buttons";
 import ProblemDisplay from "@/components/problem-display";
 import Header from "@/components/header";
 
-// 2. Type Definitions
-// Define types relevant to the component
-type Theme = {
-  id: string;
-  name: string;
-  icon: React.ReactNode;
-};
+// 2. Type Definitions - No longer strictly needed for 'Theme' if it's just a string input
+// The old 'Theme' type is kept for reference but not directly used for theme selection.
 
 // 3. Main Component Definition
 export default function MathProblemPersonalizer() {
@@ -39,54 +35,98 @@ export default function MathProblemPersonalizer() {
   // Group related state variables together
   const [originalProblem, setOriginalProblem] = useState<string>("");
   const [rewrittenProblem, setRewrittenProblem] = useState<string>("");
-  const [selectedTheme, setSelectedTheme] = useState<string>("football");
+  const [customThemeInput, setCustomThemeInput] = useState<string>("football"); // State for user's theme input
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null); // State for error messages
 
   // 5. Constants and Configuration Data
-  // Data that doesn't change based on user interaction
-  const themes: Theme[] = [
-    { id: "cartoon", name: "Cartoon", icon: <Smile className="h-5 w-5" /> },
-    {
-      id: "football",
-      name: "Football",
-      icon: <Football className="h-5 w-5" />,
-    },
-    { id: "games", name: "Games", icon: <Gamepad2 className="h-5 w-5" /> },
-    { id: "animals", name: "Animals", icon: <Cat className="h-5 w-5" /> },
+  // Predefined hints for the theme input
+  const themeHints: string[] = [
+    "Football",
+    "Minecraft",
+    "Cooking",
+    "Space Exploration",
+    "Zoo animals",
   ];
-
-  // Example rewritten problems for simulation
-  const exampleRewrittenProblems = {
-    football:
-      "Coach Adam is setting up for the big football tournament at school. He has 6 large storage racks in the equipment room. On each rack, he carefully places 12 shiny footballs so that each team has enough to practice. How many footballs does Coach Adam place on the racks in total?",
-    games:
-      "In Minecraft, Steve is building 6 bookshelves for his enchantment room. Each bookshelf requires 12 books to craft. How many books will Steve need to collect in total?",
-    animals:
-      "A wildlife sanctuary has 6 large habitats. Each habitat houses 12 rescued animals. How many animals are being cared for at the sanctuary in total?",
-    cartoon:
-      "SpongeBob is organizing his jellyfish collection. He has 6 special tanks and puts 12 jellyfish in each tank. How many jellyfish does SpongeBob have in his collection?",
-  };
 
   // 6. Event Handlers and Functions
   // Functions that handle user interactions or component logic
+
+  // Placeholder for image upload handling (if ImageUploader is used)
   const handleImageUpload = (text: string) => {
     setOriginalProblem(text);
   };
 
-  const handleRewrite = () => {
-    if (!originalProblem) return;
+  // Handles updating the custom theme input when a hint button is clicked
+  const handleHintClick = (hint: string) => {
+    setCustomThemeInput(hint);
+  };
+
+  const handleRewrite = async () => {
+    if (!originalProblem) {
+      setError("Please provide an original math problem first.");
+      return;
+    }
+    if (!customThemeInput.trim()) {
+      setError("Please enter a theme for the rewrite.");
+      return;
+    }
 
     setIsLoading(true);
+    setError(null); // Clear previous errors
 
-    // Simulate API call to rewrite the problem
-    setTimeout(() => {
-      setRewrittenProblem(
-        exampleRewrittenProblems[
-          selectedTheme as keyof typeof exampleRewrittenProblems
-        ]
+    try {
+      // Construct the prompt for the LLM
+      const prompt = `Rewrite the following math problem using a '${customThemeInput}' theme. Ensure the core mathematical problem (numbers and operation) remains the same, but change the context and characters to fit the theme. The original problem is: "${originalProblem}"`;
+
+      let chatHistory = [];
+      chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+      const payload = { contents: chatHistory };
+      const apiKey = ""; // Canvas will provide this in runtime
+      const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+      const response = await fetch(apiUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        throw new Error(`API error: ${response.statusText}`);
+      }
+
+      const result = await response.json();
+
+      if (
+        result.candidates &&
+        result.candidates.length > 0 &&
+        result.candidates[0].content &&
+        result.candidates[0].content.parts &&
+        result.candidates[0].content.parts.length > 0
+      ) {
+        const text = result.candidates[0].content.parts[0].text;
+        setRewrittenProblem(text);
+      } else {
+        setError(
+          "Failed to get a rewritten problem from the AI. Please try again."
+        );
+        setRewrittenProblem(
+          "Could not rewrite the problem. Please check your input and try again."
+        );
+      }
+    } catch (err) {
+      console.error("Error rewriting problem:", err);
+      setError(
+        `Failed to rewrite the problem: ${
+          err instanceof Error ? err.message : String(err)
+        }. Please try again.`
       );
+      setRewrittenProblem(
+        "An error occurred during rewriting. Please try again."
+      );
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
   const handleTextToSpeech = () => {
@@ -107,7 +147,7 @@ export default function MathProblemPersonalizer() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `math-problem-${selectedTheme}.txt`;
+    a.download = `math-problem-themed.txt`; // Generic name since theme is custom
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -125,25 +165,59 @@ export default function MathProblemPersonalizer() {
           <Card className="p-4">
             <h2 className="text-xl font-bold mb-2">Original Problem</h2>
             <div className="min-h-24 p-4 bg-amber-50 rounded-md">
-              {originalProblem || (
+              {(
                 <p className="text-gray-400 italic">
-                  Upload or take a photo of a math problem to get started
+                  {/* Upload or take a photo of a math problem to get started */}
                 </p>
               )}
+              {/* For demonstration, allow manual input of original problem */}
+              <textarea
+                className="w-full mt-2 p-2 border rounded-md"
+                placeholder="Or type the original problem here..."
+                value={originalProblem}
+                onChange={(e) => setOriginalProblem(e.target.value)}
+                rows={3}
+              />
             </div>
           </Card>
 
           <div className="space-y-4">
-            <ThemeSelector
-            // Don't forget to add the props back if needed
-              // themes={themes} // Uncommented and passed props
-              // selectedTheme={selectedTheme} // Uncommented and passed props
-              // onSelectTheme={setSelectedTheme} // Uncommented and passed props
+            <h3 className="text-lg font-semibold">
+              Choose a Theme or Enter Your Own:
+            </h3>
+            <Input
+              type="text"
+              placeholder="e.g., 'Swimming', 'Cooking', 'Football'"
+              value={customThemeInput}
+              onChange={(e) => setCustomThemeInput(e.target.value)}
+              className="w-full p-2 border rounded-md"
             />
+
+            <div className="flex flex-wrap gap-2 justify-center">
+              {themeHints.map((hint, index) => (
+                <Button
+                  key={index}
+                  onClick={() => handleHintClick(hint)}
+                  variant="outline"
+                  className="rounded-full px-4 py-2 text-sm flex items-center space-x-1 hover:bg-gray-100 transition-colors"
+                >
+                  <Lightbulb className="h-4 w-4 text-yellow-500" />
+                  <span>{hint}</span>
+                </Button>
+              ))}
+            </div>
+
+            {error && (
+              <div className="text-red-500 text-sm p-2 bg-red-100 rounded-md">
+                {error}
+              </div>
+            )}
 
             <Button
               onClick={handleRewrite}
-              disabled={!originalProblem || isLoading}
+              disabled={
+                !originalProblem || !customThemeInput.trim() || isLoading
+              }
               className="w-full bg-orange-400 hover:bg-orange-500 text-white text-lg py-6"
             >
               {isLoading ? (
@@ -157,8 +231,6 @@ export default function MathProblemPersonalizer() {
 
         {/* ProblemDisplay and ActionButtons are now grouped and ProblemDisplay comes first */}
         <div className="space-y-6">
-          {" "}
-          {/* Added a div to group them and apply spacing */}
           <ProblemDisplay
             rewrittenProblem={rewrittenProblem}
             onListen={handleTextToSpeech}
