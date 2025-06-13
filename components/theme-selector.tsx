@@ -1,48 +1,74 @@
-"use client"
+"use client";
 
-import type React from "react"
+import { useState } from "react";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-import { Button } from "@/components/ui/button"
-import { cn } from "@/lib/utils"
+const themes = [
+  { id: "minecraft", name: "Minecraft", icon: "🧱" },
+  { id: "football", name: "Football", icon: "⚽" },
+  { id: "space", name: "Space Exploration", icon: "🚀" },
+  { id: "wildlife", name: "Wildlife", icon: "🦁" },
+  { id: "superhero", name: "Superheroes", icon: "🦸" },
+  { id: "cooking", name: "Cooking", icon: "👨‍🍳" },
+  { id: "music", name: "Music", icon: "🎵" },
+  { id: "fantasy", name: "Fantasy", icon: "🧙" },
+];
 
-interface ThemeSelectorProps {
-  themes: {
-    id: string
-    name: string
-    icon: React.ReactNode
-  }[]
-  selectedTheme: string
-  onSelectTheme: (theme: string) => void
-}
+export default function ThemeSelector() {
+  const [selectedTheme, setSelectedTheme] = useState("");
 
-export default function ThemeSelector({ themes, selectedTheme, onSelectTheme }: ThemeSelectorProps) {
   return (
-    <div className="space-y-2">
-      <div className="flex items-center">
-        <h2 className="text-xl font-bold">Theme</h2>
-        <div className="relative ml-3">
-          <Button variant="outline" className="bg-teal-500 text-white hover:bg-teal-600">
-            {themes.find((t) => t.id === selectedTheme)?.name || "Select Theme"}
-            <span className="ml-2">▼</span>
-          </Button>
-        </div>
-      </div>
+    <Card>
+      <CardHeader>
+        <CardTitle>Choose Your Theme</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <Select value={selectedTheme} onValueChange={setSelectedTheme}>
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder="Select a theme" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectGroup>
+              <SelectLabel>Themes</SelectLabel>
+              {themes.map((theme) => (
+                <SelectItem key={theme.id} value={theme.id}>
+                  <div className="flex items-center">
+                    <span className="mr-2">{theme.icon}</span>
+                    <span>{theme.name}</span>
+                  </div>
+                </SelectItem>
+              ))}
+            </SelectGroup>
+          </SelectContent>
+        </Select>
 
-      <div className="flex flex-wrap gap-2">
-        {themes.map((theme) => (
-          <Button
-            key={theme.id}
-            variant="ghost"
-            onClick={() => onSelectTheme(theme.id)}
-            className={cn("flex flex-col items-center p-3 h-auto", selectedTheme === theme.id ? "bg-gray-100" : "")}
-          >
-            <div className={cn("p-2 rounded-full mb-1", selectedTheme === theme.id ? "bg-teal-100" : "bg-gray-100")}>
-              {theme.icon}
-            </div>
-            <span className="text-xs">{theme.name}</span>
-          </Button>
-        ))}
-      </div>
-    </div>
-  )
+        {selectedTheme && (
+          <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-2">
+            {themes
+              .filter((t) => t.id !== selectedTheme)
+              .slice(0, 4)
+              .map((theme) => (
+                <button
+                  key={theme.id}
+                  className="p-2 text-center border rounded-md hover:bg-gray-50 transition-colors"
+                  onClick={() => setSelectedTheme(theme.id)}
+                >
+                  <div className="text-xl">{theme.icon}</div>
+                  <div className="text-xs mt-1">{theme.name}</div>
+                </button>
+              ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
 }
