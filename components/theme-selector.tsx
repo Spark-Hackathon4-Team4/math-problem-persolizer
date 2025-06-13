@@ -47,6 +47,7 @@ export default function MathProblemPersonalizer() {
     "Cooking",
     "Space Exploration",
     "Zoo animals",
+    "Pirates",
   ];
 
   // 6. Event Handlers and Functions

@@ -30,8 +30,8 @@ export default function ProblemDisplay({
         ) : (
           <div className="flex-1 flex items-center justify-center">
             <p className="text-gray-400 italic text-center">
-              Your personalized math problem will appear here after you upload a
-              problem and click "Rewrite!"
+              Your personalized math problem will appear here after you click
+              "Rewrite!"
             </p>
           </div>
         )}

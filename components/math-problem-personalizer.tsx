@@ -165,15 +165,15 @@ export default function MathProblemPersonalizer() {
           <Card className="p-4">
             <h2 className="text-xl font-bold mb-2">Original Problem</h2>
             <div className="min-h-24 p-4 bg-amber-50 rounded-md">
-              {(
+              {
                 <p className="text-gray-400 italic">
                   {/* Upload or take a photo of a math problem to get started */}
                 </p>
-              )}
+              }
               {/* For demonstration, allow manual input of original problem */}
               <textarea
                 className="w-full mt-2 p-2 border rounded-md"
-                placeholder="Or type the original problem here..."
+                placeholder="Type the original problem here..."
                 value={originalProblem}
                 onChange={(e) => setOriginalProblem(e.target.value)}
                 rows={3}
@@ -237,7 +237,7 @@ export default function MathProblemPersonalizer() {
             onRephrase={handleRewrite}
             onSave={handleSave}
           />
-          <ActionButtons />
+          {/* <ActionButtons /> */}
         </div>
       </div>
     </div>
