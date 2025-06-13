@@ -1,10 +1,10 @@
-import type { Metadata } from "next"
-import MathProblemPersonalizer from "@/components/math-problem-personalizer"
+import type { Metadata } from "next";
+import MathProblemPersonalizer from "@/components/math-problem-personalizer";
 
 export const metadata: Metadata = {
   title: "Math Problem Personalizer",
   description: "Rewrite math word problems based on your interests",
-}
+};
 
 export default function Home() {
   return (
@@ -13,5 +13,5 @@ export default function Home() {
         <MathProblemPersonalizer />
       </div>
     </main>
-  )
+  );
 }

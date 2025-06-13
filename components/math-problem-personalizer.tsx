@@ -13,7 +13,8 @@ import {
   Cat,
 } from "lucide-react";
 import ThemeSelector from "@/components/theme-selector";
-import ImageUploader from "@/components/image-uploader";
+// import ImageUploader from "@/components/image-uploader";
+import ActionButtons from "@/components/action-buttons";
 import ProblemDisplay from "@/components/problem-display";
 import Header from "@/components/header";
 
@@ -102,7 +103,10 @@ export default function MathProblemPersonalizer() {
 
       <div className="grid md:grid-cols-2 gap-6">
         <div className="space-y-6">
-          {/* <ImageUploader onImageProcessed={handleImageUpload} /> */}
+          {
+            /* <ImageUploader onImageProcessed={handleImageUpload} /> */
+            <ActionButtons />
+          }
 
           <Card className="p-4">
             <h2 className="text-xl font-bold mb-2">Original Problem</h2>
