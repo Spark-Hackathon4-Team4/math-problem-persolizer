@@ -42,10 +42,10 @@ export default function MathProblemPersonalizer() {
   // 5. Constants and Configuration Data
   // Predefined hints for the theme input
   const themeHints: string[] = [
-    "Space adventure",
-    "Detective story",
-    "Pirate quest",
-    "Fantasy world",
+    "Football",
+    "Minecraft",
+    "Cooking",
+    "Space Exploration",
     "Zoo animals",
   ];
 
